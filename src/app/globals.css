@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8faf9;
+  --foreground: #1e293b; /* Slate 800 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans), Arial, sans-serif;
+  
+  --color-primary: #0d4a41; /* Dark teal/green */
+  --color-primary-light: #16655a;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #128c7e;
+  --color-mint: #eef7f6;
+  --color-mint-border: #d4ebe8;
+  
+  /* Cards */
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Base card utilities */
+@layer components {
+  .card {
+    @apply bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden;
+  }
+}

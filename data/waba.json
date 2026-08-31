@@ -1,0 +1,19 @@
+[
+  {
+    "id": "waba_1",
+    "clientId": "client_manse",
+    "displayName": "Makarand Toraskar",
+    "mobileNumber": "919076450027",
+    "createdOn": "8/10/2026",
+    "expiryDate": "2026-10-09",
+    "verificationStatus": "Verified",
+    "phoneStatus": "CONNECTED",
+    "quality": "High Quality",
+    "messagingLimit": "2000",
+    "businessName": "Makarand Toraskar",
+    "businessId": "1029304726540713",
+    "wabaAccountId": "1383803160374041",
+    "phoneNumberId": "1168766989663273",
+    "insights": "Disabled"
+  }
+]

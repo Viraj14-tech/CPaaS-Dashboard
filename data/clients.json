@@ -1,0 +1,24 @@
+[
+  {
+    "id": "client_manse",
+    "name": "MANSE",
+    "displayName": "manse",
+    "contactPerson": "Sandeep Pachange",
+    "phone": "+918459668620",
+    "email": "virajtarle4@gmail.com",
+    "status": "active",
+    "createdAt": "2026-08-31T17:35:53.159Z",
+    "updatedAt": "2026-08-31T17:35:53.160Z"
+  },
+  {
+    "id": "client_1788203656627",
+    "name": "TRASSIR",
+    "displayName": "TRASSIR Security",
+    "contactPerson": "Admin",
+    "phone": "1234567890",
+    "email": "admin@trassir.com",
+    "status": "active",
+    "createdAt": "2026-08-31T19:14:16.627Z",
+    "updatedAt": "2026-08-31T19:14:16.627Z"
+  }
+]

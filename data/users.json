@@ -1,0 +1,18 @@
+[
+  {
+    "id": "user_1",
+    "username": "manse",
+    "passwordHash": "$2b$10$x099zz7/HDYwZRnmCtHO8erJKPov6plb3D5N3MtxXu5bRDuKtqUnm",
+    "role": "CLIENT",
+    "clientId": "client_manse",
+    "active": true
+  },
+  {
+    "id": "admin_1",
+    "username": "admin",
+    "passwordHash": "$2b$10$x099zz7/HDYwZRnmCtHO8erJKPov6plb3D5N3MtxXu5bRDuKtqUnm",
+    "role": "ADMIN",
+    "clientId": null,
+    "active": true
+  }
+]
