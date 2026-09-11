@@ -150,21 +150,30 @@ export function DeleteCampaignButton({ id }: { id: string }) {
   );
 }
 
+import { BulkCampaignModal } from "./BulkCampaignModal";
+
 export function CampaignListActions({ client, campaigns }: { client: any, campaigns: any[] }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [editCamp, setEditCamp] = useState<any>(null);
 
   return (
     <>
       <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
         <h3 className="font-bold text-slate-800">Campaign Data</h3>
-        <button onClick={() => setShowAdd(true)} className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center shadow-sm">
-          <Plus className="w-3.5 h-3.5 mr-1" /> Add Campaign
-        </button>
+        <div className="flex space-x-2">
+          <button onClick={() => setShowBulkAdd(true)} className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded text-xs font-medium flex items-center shadow-sm">
+            Bulk Add Campaigns
+          </button>
+          <button onClick={() => setShowAdd(true)} className="bg-slate-900 text-white hover:bg-slate-800 px-3 py-1.5 rounded text-xs font-medium flex items-center shadow-sm">
+            <Plus className="w-3.5 h-3.5 mr-1" /> Add Campaign
+          </button>
+        </div>
       </div>
       
       {showAdd && <CampaignModal client={client} onClose={() => setShowAdd(false)} />}
       {editCamp && <CampaignModal client={client} campaign={editCamp} onClose={() => setEditCamp(null)} />}
+      {showBulkAdd && <BulkCampaignModal client={client} campaigns={campaigns} onClose={() => setShowBulkAdd(false)} />}
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">

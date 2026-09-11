@@ -56,6 +56,13 @@ export const campaignsStore = {
     return campaign;
   },
 
+  bulkCreate: (newCampaigns: Campaign[]) => {
+    const campaigns = campaignsStore.getAll();
+    campaigns.push(...newCampaigns);
+    campaignsStore.saveAll(campaigns);
+    return newCampaigns;
+  },
+
   update: (id: string, updates: Partial<Campaign>) => {
     const campaigns = campaignsStore.getAll();
     const index = campaigns.findIndex(c => c.id === id);

@@ -69,3 +69,40 @@ export async function deleteCampaign(id: string) {
   
   return { success: true };
 }
+
+export async function importBulkCampaigns(clientId: string, validCampaignsData: any[]) {
+  const session = await getSession();
+  if (session?.role !== 'ADMIN') return { error: 'Unauthorized' };
+
+  if (!Array.isArray(validCampaignsData) || validCampaignsData.length === 0) {
+    return { error: 'No valid campaigns provided' };
+  }
+
+  // Server-side secondary validation
+  const campaignsToCreate = [];
+  const now = Date.now();
+
+  for (let i = 0; i < validCampaignsData.length; i++) {
+    const data = validCampaignsData[i];
+    const validation = CampaignSchema.safeParse(data);
+    if (!validation.success) {
+      return { error: `Validation failed on row ${i + 1}: ${validation.error.issues[0].message}` };
+    }
+    
+    campaignsToCreate.push({
+      id: `camp_${now}_${i}`,
+      clientId,
+      ...validation.data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  campaignsStore.bulkCreate(campaignsToCreate);
+
+  revalidatePath(`/admin/clients/${clientId}`);
+  revalidatePath('/dashboard');
+  revalidatePath('/whatsapp/report');
+
+  return { success: true, importedCount: campaignsToCreate.length };
+}
