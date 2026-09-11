@@ -115,14 +115,20 @@ export function EditClientForm({ client, user }: { client: any, user: any }) {
     setSuccess(false);
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    const result = await updateClient(client.id, formData);
-    setLoading(false);
     
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+    try {
+      const result = await updateClient(client.id, formData);
+      setLoading(false);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setError(err?.message || "An unexpected error occurred while saving.");
     }
   };
 

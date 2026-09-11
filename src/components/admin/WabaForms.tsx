@@ -16,19 +16,24 @@ export function WabaModal({ client, waba, onClose }: { client: any, waba?: any, 
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     
-    let result;
-    if (isEdit) {
-      result = await updateWaba(waba.id, formData);
-    } else {
-      result = await addWaba(client.id, formData);
-    }
-    
-    setLoading(false);
-    
-    if (result.error) {
-      setError(result.error);
-    } else {
-      onClose();
+    try {
+      let result;
+      if (isEdit) {
+        result = await updateWaba(waba.id, formData);
+      } else {
+        result = await addWaba(client.id, formData);
+      }
+      
+      setLoading(false);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        onClose();
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setError(err?.message || "An unexpected error occurred while saving.");
     }
   };
 
