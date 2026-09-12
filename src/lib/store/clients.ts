@@ -1,8 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-import { safeWriteJson } from './utils';
-
-const DATA_FILE = path.join(process.cwd(), 'data/clients.json');
+import { supabase } from '../supabase';
 
 export interface Client {
   id: string;
@@ -17,45 +13,40 @@ export interface Client {
 }
 
 export const clientsStore = {
-  getAll: (): Client[] => {
-    try {
-      if (!fs.existsSync(DATA_FILE)) return [];
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
+  getAll: async (): Promise<Client[]> => {
+    const { data, error } = await supabase.from('clients').select('*');
+    if (error) {
       console.error('Error reading clients', error);
       return [];
     }
-  },
-  
-  findById: (id: string): Client | undefined => {
-    return clientsStore.getAll().find(c => c.id === id);
+    return data as Client[];
   },
 
-  saveAll: (clients: Client[]) => {
-    safeWriteJson(DATA_FILE, clients);
+  findById: async (id: string): Promise<Client | undefined> => {
+    const { data, error } = await supabase.from('clients').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data as Client;
   },
 
-  create: (client: Client) => {
-    const clients = clientsStore.getAll();
-    clients.push(client);
-    clientsStore.saveAll(clients);
-    return client;
+  create: async (client: Client): Promise<Client> => {
+    const { data, error } = await supabase.from('clients').insert([client]).select().single();
+    if (error) throw error;
+    return data as Client;
   },
 
-  update: (id: string, updates: Partial<Client>) => {
-    const clients = clientsStore.getAll();
-    const index = clients.findIndex(c => c.id === id);
-    if (index === -1) return null;
+  update: async (id: string, updates: Partial<Client>): Promise<Client | null> => {
+    const { data, error } = await supabase
+      .from('clients')
+      .update({ ...updates, updatedAt: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
     
-    clients[index] = { ...clients[index], ...updates, updatedAt: new Date().toISOString() };
-    clientsStore.saveAll(clients);
-    return clients[index];
+    if (error) return null;
+    return data as Client;
   },
 
-  delete: (id: string) => {
-    let clients = clientsStore.getAll();
-    clients = clients.filter(c => c.id !== id);
-    clientsStore.saveAll(clients);
+  delete: async (id: string): Promise<void> => {
+    await supabase.from('clients').delete().eq('id', id);
   }
 };

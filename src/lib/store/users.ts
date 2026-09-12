@@ -1,66 +1,55 @@
-import fs from 'fs';
-import path from 'path';
-import { safeWriteJson } from './utils';
-
-const DATA_FILE = path.join(process.cwd(), 'data/users.json');
+import { supabase } from '../supabase';
 
 export interface User {
   id: string;
   username: string;
   passwordHash: string;
   role: 'ADMIN' | 'CLIENT';
-  clientId: string | null;
+  clientId?: string;
   active: boolean;
 }
 
 export const usersStore = {
-  getAll: (): User[] => {
-    try {
-      if (!fs.existsSync(DATA_FILE)) return [];
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
+  getAll: async (): Promise<User[]> => {
+    const { data, error } = await supabase.from('users').select('*');
+    if (error) {
       console.error('Error reading users', error);
       return [];
     }
-  },
-  
-  findByUsername: (username: string): User | undefined => {
-    return usersStore.getAll().find(u => u.username === username);
+    return data as User[];
   },
 
-  findById: (id: string): User | undefined => {
-    return usersStore.getAll().find(u => u.id === id);
+  findByUsername: async (username: string): Promise<User | undefined> => {
+    const { data, error } = await supabase.from('users').select('*').eq('username', username).single();
+    if (error) return undefined;
+    return data as User;
   },
 
-  findByClientId: (clientId: string): User | undefined => {
-    return usersStore.getAll().find(u => u.clientId === clientId);
+  findById: async (id: string): Promise<User | undefined> => {
+    const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data as User;
   },
 
-  saveAll: (users: User[]) => {
-    safeWriteJson(DATA_FILE, users);
+  findByClientId: async (clientId: string): Promise<User | undefined> => {
+    const { data, error } = await supabase.from('users').select('*').eq('clientId', clientId).single();
+    if (error) return undefined;
+    return data as User;
   },
 
-  create: (user: User) => {
-    const users = usersStore.getAll();
-    users.push(user);
-    usersStore.saveAll(users);
-    return user;
+  create: async (user: User): Promise<User> => {
+    const { data, error } = await supabase.from('users').insert([user]).select().single();
+    if (error) throw error;
+    return data as User;
   },
 
-  update: (id: string, updates: Partial<User>) => {
-    const users = usersStore.getAll();
-    const index = users.findIndex(u => u.id === id);
-    if (index === -1) return null;
-    
-    users[index] = { ...users[index], ...updates };
-    usersStore.saveAll(users);
-    return users[index];
+  update: async (id: string, updates: Partial<User>): Promise<User | null> => {
+    const { data, error } = await supabase.from('users').update(updates).eq('id', id).select().single();
+    if (error) return null;
+    return data as User;
   },
 
-  delete: (id: string) => {
-    let users = usersStore.getAll();
-    users = users.filter(u => u.id !== id);
-    usersStore.saveAll(users);
+  delete: async (id: string): Promise<void> => {
+    await supabase.from('users').delete().eq('id', id);
   }
 };

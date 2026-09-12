@@ -13,7 +13,7 @@ export async function login(formData: FormData) {
     return { error: 'Please provide both User ID and Password' };
   }
 
-  const user = usersStore.findByUsername(userId);
+  const user = await usersStore.findByUsername(userId);
 
   if (!user || !user.active) {
     return { error: 'Invalid credentials' };
@@ -28,7 +28,7 @@ export async function login(formData: FormData) {
   await createSession({
     userId: user.id,
     role: user.role,
-    clientId: user.clientId
+    clientId: user.clientId || null
   });
 
   if (user.role === 'ADMIN') {

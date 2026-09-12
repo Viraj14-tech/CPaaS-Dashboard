@@ -1,10 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { safeWriteJson } from './utils';
+import { supabase } from '../supabase';
 
-const DATA_FILE = path.join(process.cwd(), 'data/waba.json');
-
-export interface Waba {
+export interface WabaAccount {
   id: string;
   clientId: string;
   displayName: string;
@@ -23,49 +19,40 @@ export interface Waba {
 }
 
 export const wabaStore = {
-  getAll: (): Waba[] => {
-    try {
-      if (!fs.existsSync(DATA_FILE)) return [];
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      console.error('Error reading waba', error);
+  getAll: async (): Promise<WabaAccount[]> => {
+    const { data, error } = await supabase.from('waba').select('*');
+    if (error) {
+      console.error('Error reading WABA accounts', error);
       return [];
     }
+    return data as WabaAccount[];
   },
   
-  findByClientId: (clientId: string): Waba[] => {
-    return wabaStore.getAll().find(w => w.clientId === clientId) ? wabaStore.getAll().filter(w => w.clientId === clientId) : [];
+  findByClientId: async (clientId: string): Promise<WabaAccount[]> => {
+    const { data, error } = await supabase.from('waba').select('*').eq('clientId', clientId);
+    if (error) return [];
+    return data as WabaAccount[];
   },
 
-  findById: (id: string): Waba | undefined => {
-    return wabaStore.getAll().find(w => w.id === id);
+  findById: async (id: string): Promise<WabaAccount | undefined> => {
+    const { data, error } = await supabase.from('waba').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data as WabaAccount;
   },
 
-  saveAll: (wabas: Waba[]) => {
-    safeWriteJson(DATA_FILE, wabas);
+  create: async (waba: WabaAccount): Promise<WabaAccount> => {
+    const { data, error } = await supabase.from('waba').insert([waba]).select().single();
+    if (error) throw error;
+    return data as WabaAccount;
   },
 
-  create: (waba: Waba) => {
-    const wabas = wabaStore.getAll();
-    wabas.push(waba);
-    wabaStore.saveAll(wabas);
-    return waba;
+  update: async (id: string, updates: Partial<WabaAccount>): Promise<WabaAccount | null> => {
+    const { data, error } = await supabase.from('waba').update(updates).eq('id', id).select().single();
+    if (error) return null;
+    return data as WabaAccount;
   },
 
-  update: (id: string, updates: Partial<Waba>) => {
-    const wabas = wabaStore.getAll();
-    const index = wabas.findIndex(w => w.id === id);
-    if (index === -1) return null;
-    
-    wabas[index] = { ...wabas[index], ...updates };
-    wabaStore.saveAll(wabas);
-    return wabas[index];
-  },
-
-  delete: (id: string) => {
-    let wabas = wabaStore.getAll();
-    wabas = wabas.filter(w => w.id !== id);
-    wabaStore.saveAll(wabas);
+  delete: async (id: string): Promise<void> => {
+    await supabase.from('waba').delete().eq('id', id);
   }
 };

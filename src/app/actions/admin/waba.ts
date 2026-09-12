@@ -16,7 +16,7 @@ export async function addWaba(clientId: string, formData: FormData) {
     return { error: validation.error.issues[0].message };
   }
 
-  const waba = wabaStore.create({
+  const waba = await wabaStore.create({
     id: `waba_${Date.now()}`,
     clientId,
     ...validation.data
@@ -32,7 +32,7 @@ export async function updateWaba(id: string, formData: FormData) {
   const session = await getSession();
   if (session?.role !== 'ADMIN') return { error: 'Unauthorized' };
 
-  const existing = wabaStore.findById(id);
+  const existing = await wabaStore.findById(id);
   if (!existing) return { error: 'Not found' };
 
   const data = Object.fromEntries(formData.entries());
@@ -42,7 +42,7 @@ export async function updateWaba(id: string, formData: FormData) {
     return { error: validation.error.issues[0].message };
   }
 
-  const updated = wabaStore.update(id, validation.data);
+  const updated = await wabaStore.update(id, validation.data);
 
   revalidatePath(`/admin/clients/${existing.clientId}`);
   revalidatePath('/whatsapp/manage-waba');

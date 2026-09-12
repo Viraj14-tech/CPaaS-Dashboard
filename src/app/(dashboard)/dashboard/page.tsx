@@ -11,7 +11,7 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const campaigns = campaignsStore.findByClientId(session.clientId);
+  const campaigns = await campaignsStore.findByClientId(session.clientId);
 
   // Calculations
   const totalAudience = campaigns.reduce((sum, c) => sum + c.totalAudience, 0);

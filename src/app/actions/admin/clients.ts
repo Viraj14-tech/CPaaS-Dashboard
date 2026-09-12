@@ -24,14 +24,14 @@ export async function addClient(formData: FormData) {
     return { error: 'Username and password are required for new clients' };
   }
 
-  const existingUser = usersStore.findByUsername(username);
+  const existingUser = await usersStore.findByUsername(username);
   if (existingUser) {
     return { error: 'Username already exists' };
   }
 
   const clientId = `client_${Date.now()}`;
 
-  const client = clientsStore.create({
+  const client = await clientsStore.create({
     id: clientId,
     ...clientData,
     createdAt: new Date().toISOString(),
@@ -41,7 +41,7 @@ export async function addClient(formData: FormData) {
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password, salt);
 
-  usersStore.create({
+  await usersStore.create({
     id: `user_${Date.now()}`,
     username,
     passwordHash,
@@ -59,7 +59,7 @@ export async function updateClient(id: string, formData: FormData) {
   const session = await getSession();
   if (session?.role !== 'ADMIN') return { error: 'Unauthorized' };
 
-  const existing = clientsStore.findById(id);
+  const existing = await clientsStore.findById(id);
   if (!existing) return { error: 'Not found' };
 
   const data = Object.fromEntries(formData.entries());
@@ -71,15 +71,15 @@ export async function updateClient(id: string, formData: FormData) {
 
   const { username, password, ...clientData } = validation.data;
 
-  const updated = clientsStore.update(id, clientData);
+  const updated = await clientsStore.update(id, clientData);
 
   // Update corresponding user
-  const user = usersStore.findByClientId(id);
+  const user = await usersStore.findByClientId(id);
   if (user) {
     const userUpdates: any = { active: clientData.status === 'active' };
     
     if (username && username !== user.username) {
-      if (usersStore.findByUsername(username)) {
+      if (await usersStore.findByUsername(username)) {
         return { error: 'Username already exists' };
       }
       userUpdates.username = username;
@@ -90,7 +90,7 @@ export async function updateClient(id: string, formData: FormData) {
       userUpdates.passwordHash = bcrypt.hashSync(password, salt);
     }
 
-    usersStore.update(user.id, userUpdates);
+    await usersStore.update(user.id, userUpdates);
   }
 
   revalidatePath('/admin');

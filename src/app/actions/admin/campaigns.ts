@@ -16,7 +16,7 @@ export async function addCampaign(clientId: string, formData: FormData) {
     return { error: validation.error.issues[0].message };
   }
 
-  const campaign = campaignsStore.create({
+  const campaign = await campaignsStore.create({
     id: `camp_${Date.now()}`,
     clientId,
     ...validation.data,
@@ -35,7 +35,7 @@ export async function updateCampaign(id: string, formData: FormData) {
   const session = await getSession();
   if (session?.role !== 'ADMIN') return { error: 'Unauthorized' };
 
-  const existing = campaignsStore.findById(id);
+  const existing = await campaignsStore.findById(id);
   if (!existing) return { error: 'Not found' };
 
   const data = Object.fromEntries(formData.entries());
@@ -45,7 +45,7 @@ export async function updateCampaign(id: string, formData: FormData) {
     return { error: validation.error.issues[0].message };
   }
 
-  const updated = campaignsStore.update(id, validation.data);
+  const updated = await campaignsStore.update(id, validation.data);
 
   revalidatePath(`/admin/clients/${existing.clientId}`);
   revalidatePath('/dashboard');
@@ -58,10 +58,10 @@ export async function deleteCampaign(id: string) {
   const session = await getSession();
   if (session?.role !== 'ADMIN') return { error: 'Unauthorized' };
 
-  const existing = campaignsStore.findById(id);
+  const existing = await campaignsStore.findById(id);
   if (!existing) return { error: 'Not found' };
 
-  campaignsStore.delete(id);
+  await campaignsStore.delete(id);
 
   revalidatePath(`/admin/clients/${existing.clientId}`);
   revalidatePath('/dashboard');
@@ -98,7 +98,7 @@ export async function importBulkCampaigns(clientId: string, validCampaignsData: 
     });
   }
 
-  campaignsStore.bulkCreate(campaignsToCreate);
+  await campaignsStore.bulkCreate(campaignsToCreate);
 
   revalidatePath(`/admin/clients/${clientId}`);
   revalidatePath('/dashboard');

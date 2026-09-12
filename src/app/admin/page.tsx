@@ -11,7 +11,7 @@ export default async function AdminDashboard() {
     redirect('/admin/login');
   }
 
-  const clients = clientsStore.getAll();
+  const clients = await clientsStore.getAll();
 
   return (
     <div className="space-y-6">

@@ -8,7 +8,7 @@ export async function Header() {
     return null;
   }
   
-  const client = clientsStore.findById(session.clientId);
+  const client = await clientsStore.findById(session.clientId);
   if (!client) {
     return null;
   }

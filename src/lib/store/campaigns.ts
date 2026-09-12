@@ -1,8 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-import { safeWriteJson } from './utils';
-
-const DATA_FILE = path.join(process.cwd(), 'data/campaigns.json');
+import { supabase } from '../supabase';
 
 export interface Campaign {
   id: string;
@@ -24,58 +20,57 @@ export interface Campaign {
 }
 
 export const campaignsStore = {
-  getAll: (): Campaign[] => {
-    try {
-      if (!fs.existsSync(DATA_FILE)) return [];
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
+  getAll: async (): Promise<Campaign[]> => {
+    const { data, error } = await supabase.from('campaigns').select('*');
+    if (error) {
       console.error('Error reading campaigns', error);
       return [];
     }
+    return data as Campaign[];
   },
   
-  findByClientId: (clientId: string): Campaign[] => {
-    return campaignsStore.getAll()
-      .filter(c => c.clientId === clientId)
-      .sort((a, b) => new Date(b.campaignDate).getTime() - new Date(a.campaignDate).getTime());
+  findByClientId: async (clientId: string): Promise<Campaign[]> => {
+    const { data, error } = await supabase
+      .from('campaigns')
+      .select('*')
+      .eq('clientId', clientId)
+      .order('campaignDate', { ascending: false });
+      
+    if (error) return [];
+    return data as Campaign[];
   },
 
-  findById: (id: string): Campaign | undefined => {
-    return campaignsStore.getAll().find(c => c.id === id);
+  findById: async (id: string): Promise<Campaign | undefined> => {
+    const { data, error } = await supabase.from('campaigns').select('*').eq('id', id).single();
+    if (error) return undefined;
+    return data as Campaign;
   },
 
-  saveAll: (campaigns: Campaign[]) => {
-    safeWriteJson(DATA_FILE, campaigns);
+  create: async (campaign: Campaign): Promise<Campaign> => {
+    const { data, error } = await supabase.from('campaigns').insert([campaign]).select().single();
+    if (error) throw error;
+    return data as Campaign;
   },
 
-  create: (campaign: Campaign) => {
-    const campaigns = campaignsStore.getAll();
-    campaigns.push(campaign);
-    campaignsStore.saveAll(campaigns);
-    return campaign;
+  bulkCreate: async (newCampaigns: Campaign[]): Promise<Campaign[]> => {
+    const { data, error } = await supabase.from('campaigns').insert(newCampaigns).select();
+    if (error) throw error;
+    return data as Campaign[];
   },
 
-  bulkCreate: (newCampaigns: Campaign[]) => {
-    const campaigns = campaignsStore.getAll();
-    campaigns.push(...newCampaigns);
-    campaignsStore.saveAll(campaigns);
-    return newCampaigns;
+  update: async (id: string, updates: Partial<Campaign>): Promise<Campaign | null> => {
+    const { data, error } = await supabase
+      .from('campaigns')
+      .update({ ...updates, updatedAt: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) return null;
+    return data as Campaign;
   },
 
-  update: (id: string, updates: Partial<Campaign>) => {
-    const campaigns = campaignsStore.getAll();
-    const index = campaigns.findIndex(c => c.id === id);
-    if (index === -1) return null;
-    
-    campaigns[index] = { ...campaigns[index], ...updates, updatedAt: new Date().toISOString() };
-    campaignsStore.saveAll(campaigns);
-    return campaigns[index];
-  },
-
-  delete: (id: string) => {
-    let campaigns = campaignsStore.getAll();
-    campaigns = campaigns.filter(c => c.id !== id);
-    campaignsStore.saveAll(campaigns);
+  delete: async (id: string): Promise<void> => {
+    await supabase.from('campaigns').delete().eq('id', id);
   }
 };

@@ -9,7 +9,7 @@ export default async function ManageWabaPage() {
     redirect('/login');
   }
 
-  const wabaAccounts = wabaStore.findByClientId(session.clientId);
+  const wabaAccounts = await wabaStore.findByClientId(session.clientId);
   const totalAccounts = wabaAccounts.length;
   const activeAccounts = wabaAccounts.filter(w => w.phoneStatus === 'CONNECTED').length;
   const highQuality = wabaAccounts.filter(w => w.quality === 'High Quality').length;

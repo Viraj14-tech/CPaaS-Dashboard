@@ -9,7 +9,7 @@ export default async function ReportPage() {
     redirect('/login');
   }
 
-  const campaigns = campaignsStore.findByClientId(session.clientId);
+  const campaigns = await campaignsStore.findByClientId(session.clientId);
 
   return (
     <div className="space-y-6">

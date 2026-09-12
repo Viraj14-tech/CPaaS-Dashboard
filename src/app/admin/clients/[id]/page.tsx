@@ -18,15 +18,15 @@ export default async function AdminClientDetail({ params }: { params: { id: stri
 
   // Next 16+ requires awaiting params
   const id = (await params).id;
-  const client = clientsStore.findById(id);
+  const client = await clientsStore.findById(id);
 
   if (!client) {
     return <div className="p-6 text-center text-slate-500">Client not found.</div>;
   }
 
-  const user = usersStore.findByClientId(client.id);
-  const campaigns = campaignsStore.findByClientId(client.id);
-  const wabaAccounts = wabaStore.findByClientId(client.id);
+  const user = await usersStore.findByClientId(client.id);
+  const campaigns = await campaignsStore.findByClientId(client.id);
+  const wabaAccounts = await wabaStore.findByClientId(client.id);
 
   return (
     <div className="space-y-6 pb-12">
